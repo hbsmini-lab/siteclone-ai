@@ -5,7 +5,7 @@ import prisma from "@/lib/prisma";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -13,7 +13,7 @@ export async function PUT(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const userId = params.id;
+    const { id: userId } = await params;
     const body = await req.json();
     const { role, addCredits, plan } = body;
 
