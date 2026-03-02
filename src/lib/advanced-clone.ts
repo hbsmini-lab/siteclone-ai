@@ -48,7 +48,7 @@ export async function advancedClone(url: string) {
     });
 
     // Ek bekleme süresi (dinamik içerik için)
-    await page.waitForTimeout(3000);
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Scroll yaparak lazy-load resimlerini yükle
     await autoScroll(page);
