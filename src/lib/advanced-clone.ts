@@ -3,7 +3,7 @@
  * Dinamik içerik, anti-scraping, görsel çekme sorunlarını çözer
  */
 
-import puppeteer from "puppeteer";
+import puppeteer, { Page } from "puppeteer";
 
 /**
  * Gelişmiş site klonlama - Daha iyi görsel ve yapı çıkarma
@@ -77,7 +77,7 @@ export async function advancedClone(url: string) {
 /**
  * Sayfayı otomatik scroll yaparak lazy-load içeriği yükle
  */
-async function autoScroll(page: puppeteer.Page) {
+async function autoScroll(page: Page) {
   await page.evaluate(async () => {
     await new Promise<void>((resolve) => {
       let totalHeight = 0;
@@ -100,7 +100,7 @@ async function autoScroll(page: puppeteer.Page) {
 /**
  * Sayfadaki tüm resimleri bul ve absolute URL'ye çevir
  */
-async function fixImagesInPage(page: puppeteer.Page, baseUrl: string) {
+async function fixImagesInPage(page: Page, baseUrl: string) {
   await page.evaluate((base) => {
     const baseUrl = new URL(base);
     
@@ -159,7 +159,7 @@ async function fixImagesInPage(page: puppeteer.Page, baseUrl: string) {
 /**
  * Sayfadaki tüm görselleri detaylı olarak çıkar
  */
-async function extractImagesFromPage(page: puppeteer.Page): Promise<Array<{
+async function extractImagesFromPage(page: Page): Promise<Array<{
   src: string;
   alt: string;
   width: number;
