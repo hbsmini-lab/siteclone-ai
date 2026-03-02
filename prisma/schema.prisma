@@ -1,0 +1,134 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  avatar        String?
+  role          String    @default("user") // user, admin
+  credits       Int       @default(0)
+  plan          String    @default("free") // free, starter, pro, enterprise
+  planExpiresAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  projects      Project[]
+  payments      Payment[]
+  activities    Activity[]
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sourceUrl   String?
+  htmlContent String?
+  cssContent  String?
+  jsContent   String?
+  thumbnail   String?
+  status      String   @default("draft") // draft, published, archived
+  isPublic    Boolean  @default(false)
+  publishedUrl String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  versions    ProjectVersion[]
+}
+
+model ProjectVersion {
+  id          String   @id @default(cuid())
+  version     Int
+  htmlContent String?
+  cssContent  String?
+  jsContent   String?
+  changelog   String?
+  createdAt   DateTime @default(now())
+
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Package {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Float
+  credits     Int
+  features    String   // JSON string of features
+  isPopular   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  duration    Int      @default(30) // days
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id            String   @id @default(cuid())
+  amount        Float
+  currency      String   @default("USD")
+  status        String   @default("pending") // pending, completed, failed, refunded
+  paymentMethod String?
+  stripeId      String?
+  packageName   String?
+  credits       Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  code        String   @unique
+  discount    Float    // percentage
+  maxUses     Int      @default(100)
+  usedCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  startsAt    DateTime @default(now())
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Feature {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  icon        String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   // clone, edit, publish, payment, login
+  description String
+  metadata    String?  // JSON string
+  createdAt   DateTime @default(now())
+
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SiteSettings {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String
+  updatedAt   DateTime @updatedAt
+}

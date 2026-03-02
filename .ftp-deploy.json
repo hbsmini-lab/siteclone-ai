@@ -1,0 +1,10 @@
+{
+  "host": "srvc08.trwww.com",
+  "username": "sibersit",
+  "password": "Hbs.4313413",
+  "port": 21,
+  "protocol": "ftp",
+  "localDir": "./dist",
+  "remoteDir": "/public_html",
+  "exclude": ["node_modules", ".git", ".env", "*.log"]
+}

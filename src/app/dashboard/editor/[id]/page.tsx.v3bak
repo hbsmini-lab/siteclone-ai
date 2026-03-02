@@ -1,0 +1,131 @@
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import {
+  Save,
+  Eye,
+  Code2,
+  Smartphone,
+  Tablet,
+  Monitor,
+  ArrowLeft,
+  Loader2,
+} from "lucide-react";
+import Editor from "@monaco-editor/react";
+
+export default function EditorPage() {
+  const params = useParams();
+  const router = useRouter();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [project, setProject] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [htmlContent, setHtmlContent] = useState("");
+  const [viewMode, setViewMode] = useState<"visual" | "code">("visual");
+  const [deviceMode, setDeviceMode] = useState<"desktop" | "tablet" | "mobile">("desktop");
+
+  useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const res = await fetch(`/api/projects/${params.id}`);
+        if (!res.ok) throw new Error("Project not found");
+        const data = await res.json();
+        setProject(data.project);
+        setHtmlContent(data.project.htmlContent || "");
+      } catch (error) {
+        toast.error("Failed to load project");
+        router.push("/dashboard/projects");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProject();
+  }, [params.id, router]);
+
+  useEffect(() => {
+    if (iframeRef.current && htmlContent && viewMode === "visual") {
+      const doc = iframeRef.current.contentDocument;
+      if (doc) {
+        doc.open();
+        doc.write(htmlContent);
+        doc.close();
+      }
+    }
+  }, [htmlContent, viewMode]);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/projects/${params.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ htmlContent }),
+      });
+      if (!res.ok) throw new Error("Save failed");
+      toast.success("Project saved!");
+    } catch (error) {
+      toast.error("Save failed");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const getDeviceWidth = () => {
+    switch (deviceMode) {
+      case "mobile": return "375px";
+      case "tablet": return "768px";
+      default: return "100%";
+    }
+  };
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-dark-900"><Loader2 className="w-10 h-10 animate-spin text-primary-500" /></div>;
+
+  return (
+    <div className="h-screen flex flex-col bg-dark-950 text-white font-inter">
+      {/* Header */}
+      <div className="h-14 border-b border-white/5 bg-dark-900 flex items-center justify-between px-4">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.push("/dashboard/projects")} className="p-2 hover:bg-white/5 rounded-lg text-dark-400 hover:text-white transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-sm font-semibold tracking-tight truncate max-w-[200px]">{project?.name}</h1>
+        </div>
+
+        <div className="flex items-center gap-2 bg-dark-800 p-1 rounded-xl">
+          <button onClick={() => setViewMode("visual")} className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${viewMode === "visual" ? "bg-primary-600 text-white shadow-lg" : "text-dark-400 hover:text-white"}`}>
+            <Eye className="w-3.5 h-3.5" /> Visual
+          </button>
+          <button onClick={() => setViewMode("code")} className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-2 ${viewMode === "code" ? "bg-primary-600 text-white shadow-lg" : "text-dark-400 hover:text-white"}`}>
+            <Code2 className="w-3.5 h-3.5" /> Code
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1 bg-dark-800 p-1 rounded-lg">
+            <button onClick={() => setDeviceMode("desktop")} className={`p-1.5 rounded ${deviceMode === "desktop" ? "bg-dark-700 text-white" : "text-dark-500"}`}><Monitor className="w-4 h-4" /></button>
+            <button onClick={() => setDeviceMode("tablet")} className={`p-1.5 rounded ${deviceMode === "tablet" ? "bg-dark-700 text-white" : "text-dark-500"}`}><Tablet className="w-4 h-4" /></button>
+            <button onClick={() => setDeviceMode("mobile")} className={`p-1.5 rounded ${deviceMode === "mobile" ? "bg-dark-700 text-white" : "text-dark-500"}`}><Smartphone className="w-4 h-4" /></button>
+          </div>
+          <button onClick={handleSave} disabled={saving} className="bg-primary-600 hover:bg-primary-500 px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-all shadow-lg active:scale-95 disabled:opacity-50">
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Save
+          </button>
+        </div>
+      </div>
+
+      {/* Main Canvas */}
+      <div className="flex-1 overflow-hidden bg-dark-950 flex justify-center p-8">
+        {viewMode === "visual" ? (
+          <div className="bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-500 border border-white/5" style={{ width: getDeviceWidth(), height: "100%" }}>
+            <iframe ref={iframeRef} className="w-full h-full border-0" sandbox="allow-same-origin allow-scripts" />
+          </div>
+        ) : (
+          <div className="w-full h-full rounded-2xl overflow-hidden border border-white/5 shadow-2xl bg-[#1e1e1e]">
+            <Editor height="100%" language="html" theme="vs-dark" value={htmlContent} onChange={(v) => setHtmlContent(v || "")} options={{ fontSize: 14, wordWrap: "on", minimap: { enabled: false } }} />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
