@@ -31,6 +31,7 @@ import {
   Link as LinkIcon,
   Save,
   RotateCcw,
+  Image as ImageIcon,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 
@@ -226,6 +227,11 @@ export default function ThemesPage() {
     setThemes(themes.map(t => t.id === themeId ? { ...t, liveDemoUrl: url } : t));
   };
 
+  // Update any theme field
+  const updateThemeField = (themeId: string, field: keyof Theme, value: any) => {
+    setThemes(themes.map(t => t.id === themeId ? { ...t, [field]: value } : t));
+  };
+
   const filteredThemes = themes.filter((theme) => {
     const matchesCategory = selectedCategory === "all" || theme.category === selectedCategory;
     const matchesSearch = theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -407,14 +413,14 @@ export default function ThemesPage() {
                 )}
               </div>
 
-              {/* Preview Button */}
+              {/* Edit Button */}
               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <button
                   onClick={() => setPreviewTheme(theme)}
-                  className="px-4 py-2 bg-white/90 backdrop-blur-sm text-dark-900 rounded-lg font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform"
+                  className="px-4 py-2 bg-primary-600/90 backdrop-blur-sm text-white rounded-lg font-medium flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Önizleme
+                  Düzenle
                 </button>
               </div>
 
@@ -530,17 +536,15 @@ export default function ThemesPage() {
         </div>
       )}
 
-      {/* Preview Modal */}
+      {/* Edit Modal */}
       {previewTheme && (
         <div className="fixed inset-0 z-[200] bg-dark-900/95 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-dark-800 border border-dark-600 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b border-dark-600">
+            <div className="flex items-center justify-between p-4 border-b border-dark-600 bg-dark-800">
               <div className="flex items-center gap-3">
-                <h3 className="text-lg font-semibold text-white">{previewTheme.name}</h3>
-                <span className="px-2 py-0.5 bg-primary-600/20 text-primary-400 text-xs rounded-full">
-                  {categories.find(c => c.id === previewTheme.category)?.name}
-                </span>
+                <Palette className="w-5 h-5 text-primary-400" />
+                <h3 className="text-lg font-semibold text-white">Tema Düzenle</h3>
               </div>
               <button
                 onClick={() => setPreviewTheme(null)}
@@ -550,64 +554,253 @@ export default function ThemesPage() {
               </button>
             </div>
 
-            {/* Preview Content */}
-            <div className="flex-1 overflow-auto p-4">
-              <img
-                src={previewTheme.image}
-                alt={previewTheme.name}
-                className="w-full rounded-lg"
-              />
-              
-              <div className="mt-6 grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="text-white font-medium mb-2">Özellikler</h4>
-                  <ul className="space-y-1">
-                    {previewTheme.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center gap-2 text-sm text-dark-200">
-                        <Check className="w-4 h-4 text-green-400" />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
+            {/* Edit Content */}
+            <div className="flex-1 overflow-auto p-6">
+              <div className="space-y-6">
+                {/* Image Upload */}
+                <div className="bg-dark-700/30 rounded-lg p-4">
+                  <label className="text-sm font-medium text-white mb-2 block flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4" />
+                    Tema Görseli
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={previewTheme.image}
+                      alt={previewTheme.name}
+                      className="w-32 h-24 object-cover rounded-lg border border-dark-600"
+                    />
+                    <label className="flex-1 cursor-pointer">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              updateThemeField(previewTheme.id, 'image', reader.result as string);
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }}
+                      />
+                      <div className="px-4 py-2 bg-dark-600 hover:bg-dark-500 rounded-lg text-sm text-center transition-colors">
+                        Yeni Görsel Yükle
+                      </div>
+                    </label>
+                  </div>
                 </div>
+
+                {/* Basic Info */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block">Tema Adı</label>
+                    <input
+                      type="text"
+                      value={previewTheme.name}
+                      onChange={(e) => updateThemeField(previewTheme.id, 'name', e.target.value)}
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block">Kategori</label>
+                    <select
+                      value={previewTheme.category}
+                      onChange={(e) => updateThemeField(previewTheme.id, 'category', e.target.value)}
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white"
+                    >
+                      {categories.filter(c => c.id !== 'all').map(cat => (
+                        <option key={cat.id} value={cat.id}>{cat.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Description */}
                 <div>
-                  <h4 className="text-white font-medium mb-2">Renk Şeması</h4>
-                  <div className="flex gap-2">
-                    {previewTheme.colorScheme.map((color, idx) => (
+                  <label className="text-sm font-medium text-white mb-1 block">Açıklama</label>
+                  <textarea
+                    value={previewTheme.description}
+                    onChange={(e) => updateThemeField(previewTheme.id, 'description', e.target.value)}
+                    rows={2}
+                    className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white"
+                  />
+                </div>
+
+                {/* URLs */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block flex items-center gap-1">
+                      <Globe className="w-3 h-3" />
+                      Demo URL (Yerel)
+                    </label>
+                    <input
+                      type="text"
+                      value={previewTheme.demoUrl}
+                      onChange={(e) => updateThemeField(previewTheme.id, 'demoUrl', e.target.value)}
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-white mb-1 block flex items-center gap-1">
+                      <LinkIcon className="w-3 h-3" />
+                      Canlı Demo URL
+                    </label>
+                    <input
+                      type="text"
+                      value={previewTheme.liveDemoUrl || ''}
+                      onChange={(e) => updateThemeLiveDemo(previewTheme.id, e.target.value)}
+                      placeholder="https://..."
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Features */}
+                <div>
+                  <label className="text-sm font-medium text-white mb-2 block flex items-center gap-2">
+                    <Star className="w-4 h-4" />
+                    Özellikler
+                  </label>
+                  <div className="space-y-2">
+                    {previewTheme.features.map((feature, idx) => (
                       <div key={idx} className="flex items-center gap-2">
-                        <div
-                          className="w-10 h-10 rounded-lg border border-dark-600"
-                          style={{ backgroundColor: color }}
+                        <input
+                          type="text"
+                          value={feature}
+                          onChange={(e) => {
+                            const newFeatures = [...previewTheme.features];
+                            newFeatures[idx] = e.target.value;
+                            updateThemeField(previewTheme.id, 'features', newFeatures);
+                          }}
+                          className="flex-1 bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white text-sm"
                         />
-                        <span className="text-xs text-dark-300">{color}</span>
+                        <button
+                          onClick={() => {
+                            const newFeatures = previewTheme.features.filter((_, i) => i !== idx);
+                            updateThemeField(previewTheme.id, 'features', newFeatures);
+                          }}
+                          className="p-2 text-red-400 hover:text-red-300"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
+                    <button
+                      onClick={() => {
+                        const newFeatures = [...previewTheme.features, 'Yeni Özellik'];
+                        updateThemeField(previewTheme.id, 'features', newFeatures);
+                      }}
+                      className="w-full py-2 border border-dashed border-dark-500 text-dark-300 rounded-lg hover:border-primary-500 hover:text-primary-400 transition-colors text-sm"
+                    >
+                      + Özellik Ekle
+                    </button>
                   </div>
+                </div>
+
+                {/* Color Scheme */}
+                <div>
+                  <label className="text-sm font-medium text-white mb-2 block flex items-center gap-2">
+                    <Palette className="w-4 h-4" />
+                    Renk Şeması
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {previewTheme.colorScheme.map((color, idx) => (
+                      <div key={idx} className="flex items-center gap-2 bg-dark-700/30 rounded-lg p-2">
+                        <input
+                          type="color"
+                          value={color}
+                          onChange={(e) => {
+                            const newColors = [...previewTheme.colorScheme];
+                            newColors[idx] = e.target.value;
+                            updateThemeField(previewTheme.id, 'colorScheme', newColors);
+                          }}
+                          className="w-10 h-10 rounded cursor-pointer"
+                        />
+                        <input
+                          type="text"
+                          value={color}
+                          onChange={(e) => {
+                            const newColors = [...previewTheme.colorScheme];
+                            newColors[idx] = e.target.value;
+                            updateThemeField(previewTheme.id, 'colorScheme', newColors);
+                          }}
+                          className="w-24 bg-dark-700 border border-dark-600 rounded px-2 py-1 text-sm text-white"
+                        />
+                        <button
+                          onClick={() => {
+                            const newColors = previewTheme.colorScheme.filter((_, i) => i !== idx);
+                            updateThemeField(previewTheme.id, 'colorScheme', newColors);
+                          }}
+                          className="text-red-400 hover:text-red-300"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    {previewTheme.colorScheme.length < 5 && (
+                      <button
+                        onClick={() => {
+                          const newColors = [...previewTheme.colorScheme, '#000000'];
+                          updateThemeField(previewTheme.id, 'colorScheme', newColors);
+                        }}
+                        className="px-4 py-2 border border-dashed border-dark-500 text-dark-300 rounded-lg hover:border-primary-500 hover:text-primary-400 transition-colors"
+                      >
+                        + Renk Ekle
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Badges */}
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={previewTheme.isNew || false}
+                      onChange={(e) => updateThemeField(previewTheme.id, 'isNew', e.target.checked)}
+                      className="w-4 h-4 rounded border-dark-600"
+                    />
+                    <span className="text-sm text-white">Yeni</span>
+                    <Sparkles className="w-3 h-3 text-green-400" />
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={previewTheme.isPopular || false}
+                      onChange={(e) => updateThemeField(previewTheme.id, 'isPopular', e.target.checked)}
+                      className="w-4 h-4 rounded border-dark-600"
+                    />
+                    <span className="text-sm text-white">Popüler</span>
+                    <TrendingUp className="w-3 h-3 text-orange-400" />
+                  </label>
                 </div>
               </div>
             </div>
 
             {/* Modal Footer */}
             <div className="flex items-center justify-between p-4 border-t border-dark-600 bg-dark-800">
-              <a
-                href={previewTheme.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-primary-400 hover:text-primary-300"
-              >
-                <ExternalLink className="w-4 h-4" />
-                Canlı Demoyu Gör
-              </a>
               <button
                 onClick={() => {
                   setPreviewTheme(null);
-                  handleCloneTheme(previewTheme);
                 }}
-                className="btn-primary flex items-center gap-2"
+                className="px-4 py-2 text-dark-300 hover:text-white transition-colors"
               >
-                <Code2 className="w-4 h-4" />
-                Bu Tema ile Başla
+                İptal
               </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setPreviewTheme(null);
+                    handleCloneTheme(previewTheme);
+                  }}
+                  className="btn-primary flex items-center gap-2"
+                >
+                  <Code2 className="w-4 h-4" />
+                  Bu Tema ile Başla
+                </button>
+              </div>
             </div>
           </div>
         </div>
