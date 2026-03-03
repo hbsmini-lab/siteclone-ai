@@ -32,6 +32,8 @@ import {
   Save,
   RotateCcw,
   Image as ImageIcon,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 
@@ -242,6 +244,36 @@ export default function ThemesPage() {
     }
   };
 
+  // Add new theme
+  const addNewTheme = () => {
+    const newTheme: Theme = {
+      id: `custom-${Date.now()}`,
+      name: "Yeni Tema",
+      description: "Yeni tema açıklaması",
+      category: "business",
+      image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop",
+      demoUrl: "#",
+      liveDemoUrl: "",
+      features: ["Özellik 1", "Özellik 2"],
+      colorScheme: ["#2563eb", "#1e40af", "#f8fafc"],
+      isNew: true,
+    };
+    const updatedThemes = [...themes, newTheme];
+    setThemes(updatedThemes);
+    localStorage.setItem("themes-order", JSON.stringify(updatedThemes));
+    toast.success("Yeni tema eklendi!");
+  };
+
+  // Delete theme
+  const deleteTheme = (themeId: string) => {
+    if (confirm("Bu temayı silmek istediğinize emin misiniz?")) {
+      const updatedThemes = themes.filter(t => t.id !== themeId);
+      setThemes(updatedThemes);
+      localStorage.setItem("themes-order", JSON.stringify(updatedThemes));
+      toast.success("Tema silindi!");
+    }
+  };
+
   const filteredThemes = themes.filter((theme) => {
     const matchesCategory = selectedCategory === "all" || theme.category === selectedCategory;
     const matchesSearch = theme.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -279,6 +311,13 @@ export default function ThemesPage() {
           
           {/* Edit Mode Controls */}
           <div className="flex items-center gap-2">
+            <button
+              onClick={addNewTheme}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+              Yeni Tema Ekle
+            </button>
             <button
               onClick={() => setIsEditMode(!isEditMode)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
@@ -392,6 +431,13 @@ export default function ThemesPage() {
                     title="Aşağı taşı"
                   >
                     <ArrowDown className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => deleteTheme(theme.id)}
+                    className="p-1.5 hover:bg-red-900/50 text-red-400 rounded"
+                    title="Temayı Sil"
+                  >
+                    <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
               </div>
