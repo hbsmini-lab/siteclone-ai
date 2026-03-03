@@ -147,6 +147,17 @@ const themes: Theme[] = [
     features: ["Lookbook", "Beden Rehberi", "Hızlı Bakış", "İstek Listesi"],
     colorScheme: ["#7c2d12", "#9a3412", "#fff7ed"],
   },
+  {
+    id: "line-mode",
+    name: "Line Mode Retro",
+    description: "WWW'nin ilk günlerini hatırlatan retro terminal tarzı tema",
+    category: "creative",
+    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?w=800&h=600&fit=crop",
+    demoUrl: "/dashboard/themes/line-mode",
+    features: ["Retro Tasarım", "Terminal UI", "Türkçe İçerik", "Eğitici"],
+    colorScheme: ["#22c55e", "#000000", "#14532d"],
+    isNew: true,
+  },
 ];
 
 export default function ThemesPage() {
