@@ -224,12 +224,22 @@ export default function ThemesPage() {
 
   // Update theme live demo URL
   const updateThemeLiveDemo = (themeId: string, url: string) => {
-    setThemes(themes.map(t => t.id === themeId ? { ...t, liveDemoUrl: url } : t));
+    const updatedThemes = themes.map(t => t.id === themeId ? { ...t, liveDemoUrl: url } : t);
+    setThemes(updatedThemes);
+    // Also update previewTheme if it's the same theme
+    if (previewTheme && previewTheme.id === themeId) {
+      setPreviewTheme({ ...previewTheme, liveDemoUrl: url });
+    }
   };
 
   // Update any theme field
   const updateThemeField = (themeId: string, field: keyof Theme, value: any) => {
-    setThemes(themes.map(t => t.id === themeId ? { ...t, [field]: value } : t));
+    const updatedThemes = themes.map(t => t.id === themeId ? { ...t, [field]: value } : t);
+    setThemes(updatedThemes);
+    // Also update previewTheme if it's the same theme
+    if (previewTheme && previewTheme.id === themeId) {
+      setPreviewTheme({ ...previewTheme, [field]: value });
+    }
   };
 
   const filteredThemes = themes.filter((theme) => {
@@ -787,9 +797,20 @@ export default function ThemesPage() {
                 }}
                 className="px-4 py-2 text-dark-300 hover:text-white transition-colors"
               >
-                İptal
+                Kapat
               </button>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    saveThemesOrder();
+                    setPreviewTheme(null);
+                    toast.success("Tema başarıyla kaydedildi!");
+                  }}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                  Kaydet
+                </button>
                 <button
                   onClick={() => {
                     setPreviewTheme(null);
