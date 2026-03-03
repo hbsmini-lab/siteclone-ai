@@ -32,7 +32,6 @@ export default function ThemePreviewPage() {
   const [codeType, setCodeType] = useState<"html" | "php">("html");
 
   useEffect(() => {
-    // Load theme from localStorage
     const savedThemes = localStorage.getItem("themes-order");
     if (savedThemes) {
       const themes = JSON.parse(savedThemes);
@@ -51,7 +50,6 @@ export default function ThemePreviewPage() {
 
   const generateHTML = () => {
     if (!theme) return "";
-    
     const customHtml = theme.customCode?.html || "";
     const customCss = theme.customCode?.css || "";
     const customJs = theme.customCode?.js || "";
@@ -63,25 +61,14 @@ export default function ThemePreviewPage() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${theme.name}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: ${theme.colorScheme[1] || '#f3f4f6'};
             color: #1f2937;
             line-height: 1.6;
         }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
         .hero {
             background: ${theme.colorScheme[0] || '#3b82f6'};
             color: white;
@@ -90,36 +77,24 @@ export default function ThemePreviewPage() {
             border-radius: 16px;
             margin-bottom: 40px;
         }
-        
-        .hero h1 {
-            font-size: 3rem;
-            margin-bottom: 20px;
-        }
-        
-        .hero p {
-            font-size: 1.25rem;
-            opacity: 0.9;
-        }
-        
+        .hero h1 { font-size: 3rem; margin-bottom: 20px; }
+        .hero p { font-size: 1.25rem; opacity: 0.9; }
         .features {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 24px;
             margin-bottom: 40px;
         }
-        
         .feature-card {
             background: white;
             padding: 24px;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        
         .feature-card h3 {
             color: ${theme.colorScheme[0] || '#3b82f6'};
             margin-bottom: 12px;
         }
-        
         .btn {
             display: inline-block;
             background: ${theme.colorScheme[0] || '#3b82f6'};
@@ -130,11 +105,7 @@ export default function ThemePreviewPage() {
             font-weight: 600;
             transition: opacity 0.3s;
         }
-        
-        .btn:hover {
-            opacity: 0.9;
-        }
-        
+        .btn:hover { opacity: 0.9; }
         footer {
             text-align: center;
             padding: 40px 20px;
@@ -142,7 +113,6 @@ export default function ThemePreviewPage() {
             border-top: 1px solid #e5e7eb;
             margin-top: 60px;
         }
-        
         ${customCss}
     </style>
 </head>
@@ -153,7 +123,6 @@ export default function ThemePreviewPage() {
         <br>
         <a href="#" class="btn">Hemen Başla</a>
     </div>
-    
     <div class="container">
         <div class="features">
             ${theme.features.map(feature => `
@@ -163,14 +132,11 @@ export default function ThemePreviewPage() {
             </div>
             `).join('')}
         </div>
-        
         ${customHtml}
     </div>
-    
     <footer>
         <p>&copy; 2024 ${theme.name}. Tüm hakları saklıdır.</p>
     </footer>
-    
     <script>
         console.log('${theme.name} yüklendi!');
         ${customJs}
@@ -183,17 +149,10 @@ export default function ThemePreviewPage() {
     const html = generateHTML();
     return `<?php
 // ${theme?.name} - PHP Template
-// Tema bilgileri
 $themeName = "${theme?.name}";
 $themeDescription = "${theme?.description}";
-$themeCategory = "${theme?.category}";
 ?>
-${html.replace(/<!--(.*?)-->/g, '<?php // $1 ?>')}
-<?php
-// PHP Footer
-$year = date('Y');
-echo "<script>console.log('PHP ile yüklendi: ' + $year);</script>";
-?>`;
+${html}`;
   };
 
   const downloadFile = (content: string, filename: string, type: string) => {
@@ -231,80 +190,69 @@ echo "<script>console.log('PHP ile yüklendi: ' + $year);</script>";
 
   return (
     <div className="min-h-screen bg-dark-900">
-      {/* Header */}
+      {/* Compact Header */}
       <div className="bg-dark-800 border-b border-dark-600 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3">
+        <div className="max-w-7xl mx-auto px-2 py-1">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <Link
                 href="/dashboard/themes"
-                className="p-2 hover:bg-dark-700 rounded-lg text-dark-200 hover:text-white transition-colors"
+                className="p-1 hover:bg-dark-700 rounded text-dark-200 hover:text-white transition-colors"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <ArrowLeft className="w-4 h-4" />
               </Link>
               <div>
-                <h1 className="text-white font-semibold">{theme.name}</h1>
-                <p className="text-dark-400 text-sm">{theme.description}</p>
+                <h1 className="text-white text-sm font-medium">{theme.name}</h1>
+                <p className="text-dark-400 text-xs hidden sm:block">{theme.description}</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* View Mode Toggles */}
-              <div className="flex items-center gap-1 bg-dark-700/50 p-1 rounded-lg">
+            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5 bg-dark-700/50 p-0.5 rounded">
                 <button
                   onClick={() => setViewMode("desktop")}
-                  className={`p-2 rounded-md transition-colors ${
-                    viewMode === "desktop" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"
-                  }`}
+                  className={`p-1 rounded transition-colors ${viewMode === "desktop" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"}`}
                   title="Masaüstü"
                 >
-                  <Monitor className="w-4 h-4" />
+                  <Monitor className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => setViewMode("tablet")}
-                  className={`p-2 rounded-md transition-colors ${
-                    viewMode === "tablet" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"
-                  }`}
+                  className={`p-1 rounded transition-colors ${viewMode === "tablet" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"}`}
                   title="Tablet"
                 >
-                  <Tablet className="w-4 h-4" />
+                  <Tablet className="w-3 h-3" />
                 </button>
                 <button
                   onClick={() => setViewMode("mobile")}
-                  className={`p-2 rounded-md transition-colors ${
-                    viewMode === "mobile" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"
-                  }`}
+                  className={`p-1 rounded transition-colors ${viewMode === "mobile" ? "bg-primary-600 text-white" : "text-dark-200 hover:text-white"}`}
                   title="Mobil"
                 >
-                  <Smartphone className="w-4 h-4" />
+                  <Smartphone className="w-3 h-3" />
                 </button>
               </div>
 
-              {/* Code Toggle */}
               <button
                 onClick={() => setShowCode(!showCode)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
-                  showCode ? "bg-primary-600 text-white" : "bg-dark-700 text-dark-200 hover:bg-dark-600"
-                }`}
+                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-all ${showCode ? "bg-primary-600 text-white" : "bg-dark-700 text-dark-200 hover:bg-dark-600"}`}
               >
-                <Code className="w-4 h-4" />
-                {showCode ? "Önizleme" : "Kodu Gör"}
+                <Code className="w-3 h-3" />
+                <span className="hidden sm:inline">{showCode ? "Önizleme" : "Kod"}</span>
               </button>
 
-              {/* Download Buttons */}
               <button
                 onClick={() => downloadFile(previewHTML, `${theme.id}.html`, "text/html")}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-1 px-2 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs transition-colors"
               >
-                <Download className="w-4 h-4" />
-                HTML İndir
+                <Download className="w-3 h-3" />
+                <span className="hidden sm:inline">HTML</span>
               </button>
               <button
                 onClick={() => downloadFile(previewPHP, `${theme.id}.php`, "application/x-php")}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
+                className="flex items-center gap-1 px-2 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs transition-colors"
               >
-                <FileCode className="w-4 h-4" />
-                PHP İndir
+                <FileCode className="w-3 h-3" />
+                <span className="hidden sm:inline">PHP</span>
               </button>
             </div>
           </div>
@@ -312,26 +260,22 @@ echo "<script>console.log('PHP ile yüklendi: ' + $year);</script>";
       </div>
 
       {/* Preview Area */}
-      <div className="p-4">
+      <div className="p-2">
         {showCode ? (
           <div className="max-w-7xl mx-auto">
             <div className="bg-dark-800 border border-dark-600 rounded-xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-dark-600">
+              <div className="flex items-center justify-between px-4 py-2 border-b border-dark-600">
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setCodeType("html")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                      codeType === "html" ? "bg-green-600/20 text-green-400" : "text-dark-200"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm transition-colors ${codeType === "html" ? "bg-green-600/20 text-green-400" : "text-dark-200"}`}
                   >
                     <FileCode className="w-4 h-4" />
                     HTML
                   </button>
                   <button
                     onClick={() => setCodeType("php")}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                      codeType === "php" ? "bg-purple-600/20 text-purple-400" : "text-dark-200"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm transition-colors ${codeType === "php" ? "bg-purple-600/20 text-purple-400" : "text-dark-200"}`}
                   >
                     <FileCode className="w-4 h-4" />
                     PHP
@@ -348,7 +292,7 @@ echo "<script>console.log('PHP ile yüklendi: ' + $year);</script>";
                   Kopyala
                 </button>
               </div>
-              <pre className="p-4 overflow-auto max-h-[calc(100vh-250px)] text-sm font-mono text-dark-200 bg-dark-900">
+              <pre className="p-4 overflow-auto max-h-[calc(100vh-120px)] text-sm font-mono text-dark-200 bg-dark-900">
                 <code>{codeType === "html" ? previewHTML : previewPHP}</code>
               </pre>
             </div>
@@ -356,8 +300,8 @@ echo "<script>console.log('PHP ile yüklendi: ' + $year);</script>";
         ) : (
           <div className="flex justify-center">
             <div
-              className="bg-white rounded-xl overflow-hidden shadow-2xl transition-all duration-300"
-              style={{ width: getFrameWidth(), maxWidth: "1200px", height: "calc(100vh - 150px)" }}
+              className="bg-white rounded-lg overflow-hidden shadow-2xl transition-all duration-300"
+              style={{ width: getFrameWidth(), maxWidth: "100%", height: "calc(100vh - 60px)" }}
             >
               <iframe
                 srcDoc={previewHTML}
