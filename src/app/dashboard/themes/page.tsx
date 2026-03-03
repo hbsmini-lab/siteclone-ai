@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import {
@@ -25,6 +25,12 @@ import {
   Code2,
   ExternalLink,
   Loader2,
+  GripVertical,
+  ArrowUp,
+  ArrowDown,
+  Link as LinkIcon,
+  Save,
+  RotateCcw,
 } from "lucide-react";
 import { useTranslation } from "@/lib/hooks/useTranslation";
 
@@ -35,10 +41,12 @@ interface Theme {
   category: string;
   image: string;
   demoUrl: string;
+  liveDemoUrl?: string;
   features: string[];
   colorScheme: string[];
   isNew?: boolean;
   isPopular?: boolean;
+  order?: number;
 }
 
 const categories = [
@@ -51,7 +59,7 @@ const categories = [
   { id: "creative", name: "Kreatif", icon: Palette },
 ];
 
-const themes: Theme[] = [
+const defaultThemes: Theme[] = [
   {
     id: "modern-business",
     name: "Modern Business Pro",
@@ -163,10 +171,60 @@ const themes: Theme[] = [
 export default function ThemesPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const [themes, setThemes] = useState<Theme[]>(defaultThemes);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [previewTheme, setPreviewTheme] = useState<Theme | null>(null);
   const [cloningTheme, setCloningTheme] = useState<string | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingTheme, setEditingTheme] = useState<string | null>(null);
+
+  // Load saved themes order from localStorage
+  useEffect(() => {
+    const savedThemes = localStorage.getItem("themes-order");
+    if (savedThemes) {
+      try {
+        const parsed = JSON.parse(savedThemes);
+        setThemes(parsed);
+      } catch (e) {
+        console.error("Failed to load themes order");
+      }
+    }
+  }, []);
+
+  // Save themes order
+  const saveThemesOrder = () => {
+    localStorage.setItem("themes-order", JSON.stringify(themes));
+    toast.success("Tema sıralaması kaydedildi!");
+  };
+
+  // Reset to default
+  const resetThemes = () => {
+    setThemes(defaultThemes);
+    localStorage.removeItem("themes-order");
+    toast.success("Tema sıralaması sıfırlandı!");
+  };
+
+  // Move theme up
+  const moveThemeUp = (index: number) => {
+    if (index === 0) return;
+    const newThemes = [...themes];
+    [newThemes[index], newThemes[index - 1]] = [newThemes[index - 1], newThemes[index]];
+    setThemes(newThemes);
+  };
+
+  // Move theme down
+  const moveThemeDown = (index: number) => {
+    if (index === themes.length - 1) return;
+    const newThemes = [...themes];
+    [newThemes[index], newThemes[index + 1]] = [newThemes[index + 1], newThemes[index]];
+    setThemes(newThemes);
+  };
+
+  // Update theme live demo URL
+  const updateThemeLiveDemo = (themeId: string, url: string) => {
+    setThemes(themes.map(t => t.id === themeId ? { ...t, liveDemoUrl: url } : t));
+  };
 
   const filteredThemes = themes.filter((theme) => {
     const matchesCategory = selectedCategory === "all" || theme.category === selectedCategory;
@@ -195,11 +253,46 @@ export default function ThemesPage() {
     <div className="max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-primary-600/20 rounded-lg">
-            <Palette className="w-6 h-6 text-primary-400" />
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2 bg-primary-600/20 rounded-lg">
+              <Palette className="w-6 h-6 text-primary-400" />
+            </div>
+            <h1 className="text-2xl font-bold text-white">Hazır Temalar</h1>
           </div>
-          <h1 className="text-2xl font-bold text-white">Hazır Temalar</h1>
+          
+          {/* Edit Mode Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsEditMode(!isEditMode)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                isEditMode
+                  ? "bg-primary-600 text-white"
+                  : "bg-dark-700 text-dark-200 hover:bg-dark-600"
+              }`}
+            >
+              {isEditMode ? <Check className="w-4 h-4" /> : <GripVertical className="w-4 h-4" />}
+              {isEditMode ? "Düzenlemeyi Bitir" : "Sırala & Düzenle"}
+            </button>
+            {isEditMode && (
+              <>
+                <button
+                  onClick={saveThemesOrder}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                >
+                  <Save className="w-4 h-4" />
+                  Kaydet
+                </button>
+                <button
+                  onClick={resetThemes}
+                  className="flex items-center gap-2 px-4 py-2 bg-dark-700 text-dark-200 rounded-lg hover:bg-dark-600 transition-all"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  Sıfırla
+                </button>
+              </>
+            )}
+          </div>
         </div>
         <p className="text-dark-200 ml-11">
           Profesyonel tasarlanmış hazır temaları kullanarak hızla başlayın
@@ -256,11 +349,37 @@ export default function ThemesPage() {
 
       {/* Themes Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredThemes.map((theme) => (
+        {filteredThemes.map((theme, index) => (
           <div
             key={theme.id}
-            className="card-hover group overflow-hidden bg-dark-800/40 backdrop-blur-sm border border-dark-600/50"
+            className={`card-hover group overflow-hidden bg-dark-800/40 backdrop-blur-sm border border-dark-600/50 ${
+              isEditMode ? "ring-2 ring-primary-500/50" : ""
+            }`}
           >
+            {/* Edit Mode: Order Controls */}
+            {isEditMode && (
+              <div className="flex items-center justify-between px-4 py-2 bg-primary-600/20 border-b border-dark-600">
+                <span className="text-sm font-bold text-primary-400">#{index + 1}</span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => moveThemeUp(index)}
+                    disabled={index === 0}
+                    className="p-1.5 hover:bg-dark-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Yukarı taşı"
+                  >
+                    <ArrowUp className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => moveThemeDown(index)}
+                    disabled={index === filteredThemes.length - 1}
+                    className="p-1.5 hover:bg-dark-700 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                    title="Aşağı taşı"
+                  >
+                    <ArrowDown className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
             {/* Image Container */}
             <div className="relative h-56 overflow-hidden">
               <img
@@ -341,6 +460,23 @@ export default function ThemesPage() {
                 )}
               </div>
 
+              {/* Live Demo URL Editor - Edit Mode */}
+              {isEditMode && (
+                <div className="mb-4 p-3 bg-dark-700/50 rounded-lg">
+                  <label className="text-xs text-dark-300 block mb-1 flex items-center gap-1">
+                    <LinkIcon className="w-3 h-3" />
+                    Canlı Demo Linki
+                  </label>
+                  <input
+                    type="text"
+                    value={theme.liveDemoUrl || ""}
+                    onChange={(e) => updateThemeLiveDemo(theme.id, e.target.value)}
+                    placeholder="https://..."
+                    className="w-full bg-dark-800 border border-dark-600 rounded px-2 py-1 text-sm text-white"
+                  />
+                </div>
+              )}
+
               {/* Actions */}
               <div className="flex items-center gap-2 pt-4 border-t border-dark-600/30">
                 <button
@@ -360,10 +496,21 @@ export default function ThemesPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-2.5 btn-ghost"
-                  title="Demoyu Gör"
+                  title="Önizleme"
                 >
                   <Globe className="w-4 h-4" />
                 </a>
+                {theme.liveDemoUrl && (
+                  <a
+                    href={theme.liveDemoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2.5 btn-ghost text-green-400 hover:text-green-300"
+                    title="Canlı Demo"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
               </div>
             </div>
           </div>
