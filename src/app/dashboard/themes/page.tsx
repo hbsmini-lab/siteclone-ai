@@ -50,6 +50,11 @@ interface Theme {
   isNew?: boolean;
   isPopular?: boolean;
   order?: number;
+  customCode?: {
+    html?: string;
+    css?: string;
+    js?: string;
+  };
 }
 
 const categories = [
@@ -196,9 +201,14 @@ export default function ThemesPage() {
   }, []);
 
   // Save themes order
+  const [isSaving, setIsSaving] = useState(false);
   const saveThemesOrder = () => {
+    setIsSaving(true);
     localStorage.setItem("themes-order", JSON.stringify(themes));
-    toast.success("Tema sıralaması kaydedildi!");
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("✅ Tema başarıyla kaydedildi!");
+    }, 500);
   };
 
   // Reset to default
@@ -257,6 +267,11 @@ export default function ThemesPage() {
       features: ["Özellik 1", "Özellik 2"],
       colorScheme: ["#2563eb", "#1e40af", "#f8fafc"],
       isNew: true,
+      customCode: {
+        html: "",
+        css: "",
+        js: "",
+      },
     };
     const updatedThemes = [...themes, newTheme];
     setThemes(updatedThemes);
@@ -333,10 +348,15 @@ export default function ThemesPage() {
               <>
                 <button
                   onClick={saveThemesOrder}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all disabled:opacity-50"
                 >
-                  <Save className="w-4 h-4" />
-                  Kaydet
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Save className="w-4 h-4" />
+                  )}
+                  {isSaving ? "Kaydediliyor..." : "Kaydet"}
                 </button>
                 <button
                   onClick={resetThemes}
@@ -806,6 +826,59 @@ export default function ThemesPage() {
                         + Renk Ekle
                       </button>
                     )}
+                  </div>
+                </div>
+
+                {/* Custom Code Editor */}
+                <div className="border-t border-dark-600 pt-4">
+                  <label className="text-sm font-medium text-white mb-3 block flex items-center gap-2">
+                    <Code2 className="w-4 h-4" />
+                    Özel Kod (HTML/CSS/JS)
+                  </label>
+                  
+                  {/* HTML */}
+                  <div className="mb-3">
+                    <label className="text-xs text-dark-300 block mb-1">HTML</label>
+                    <textarea
+                      value={previewTheme.customCode?.html || ''}
+                      onChange={(e) => {
+                        const newCode = { ...previewTheme.customCode, html: e.target.value };
+                        updateThemeField(previewTheme.id, 'customCode', newCode);
+                      }}
+                      placeholder="<div>Özel HTML kodunuz...</div>"
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white text-sm font-mono"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  {/* CSS */}
+                  <div className="mb-3">
+                    <label className="text-xs text-dark-300 block mb-1">CSS</label>
+                    <textarea
+                      value={previewTheme.customCode?.css || ''}
+                      onChange={(e) => {
+                        const newCode = { ...previewTheme.customCode, css: e.target.value };
+                        updateThemeField(previewTheme.id, 'customCode', newCode);
+                      }}
+                      placeholder=".custom-class { color: red; }"
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white text-sm font-mono"
+                      rows={3}
+                    />
+                  </div>
+                  
+                  {/* JavaScript */}
+                  <div>
+                    <label className="text-xs text-dark-300 block mb-1">JavaScript</label>
+                    <textarea
+                      value={previewTheme.customCode?.js || ''}
+                      onChange={(e) => {
+                        const newCode = { ...previewTheme.customCode, js: e.target.value };
+                        updateThemeField(previewTheme.id, 'customCode', newCode);
+                      }}
+                      placeholder="console.log('Merhaba');"
+                      className="w-full bg-dark-700 border border-dark-600 rounded-lg px-3 py-2 text-white text-sm font-mono"
+                      rows={3}
+                    />
                   </div>
                 </div>
 
