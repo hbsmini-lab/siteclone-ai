@@ -979,12 +979,12 @@ export default function ThemesPage() {
                 <button
                   onClick={() => {
                     setPreviewTheme(null);
-                    handleCloneTheme(previewTheme);
+                    router.push(`/dashboard/themes/preview/${previewTheme.id}`);
                   }}
                   className="btn-primary flex items-center gap-2"
                 >
                   <Code2 className="w-4 h-4" />
-                  Bu Tema ile Başla
+                  HTML/PHP Önizleme
                 </button>
               </div>
             </div>
